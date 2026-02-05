@@ -1,0 +1,6 @@
+uv
+pydantic
+rich
+python-dotenv
+pytest
+pytest-asyncio
