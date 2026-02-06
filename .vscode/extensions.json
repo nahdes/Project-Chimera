@@ -1,0 +1,44 @@
+{
+  // Project Chimera - Recommended VS Code Extensions
+  "recommendations": [
+    // Essential Python
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "charliermarsh.ruff",
+    
+    // GitHub Copilot (AI Assistance)
+    "github.copilot",
+    "github.copilot-chat",
+    
+    // Testing
+    "littlefoxteam.vscode-python-test-adapter",
+    
+    // Docker
+    "ms-azuretools.vscode-docker",
+    
+    // Git
+    "eamodio.gitlens",
+    
+    // Markdown
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    
+    // YAML
+    "redhat.vscode-yaml",
+    
+    // REST Client (for API testing)
+    "humao.rest-client",
+    
+    // Database
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    
+    // Productivity
+    "gruntfuggly.todo-tree",
+    "wayou.vscode-todo-highlight",
+    "usernamehw.errorlens"
+  ],
+  
+  "unwantedRecommendations": []
+}

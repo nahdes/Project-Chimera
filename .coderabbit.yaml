@@ -1,0 +1,311 @@
+# Project Chimera - CodeRabbit AI Code Review Configuration
+# Focus: Spec alignment, security, and architectural compliance
+
+language: en-US
+early_access: false
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: true
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    markdownlint:
+      enabled: true
+    languagetool:
+      enabled: true
+      level: picky
+    hadolint:
+      enabled: true
+    
+chat:
+  auto_reply: true
+
+# CRITICAL: Spec-Driven Development Checks
+checks:
+  # 1. SPEC ALIGNMENT (HIGHEST PRIORITY)
+  - name: "Spec Alignment"
+    description: "Verify code implements documented specifications"
+    severity: error
+    rules:
+      - pattern: "src/**/*.py"
+        must_reference: "specs/**/*.md"
+        message: "All code must reference a spec. Include '# Implements: US-XXX' comment"
+      
+      - pattern: "tests/**/*.py"
+        must_contain: "US-"
+        message: "Tests must reference user story acceptance criteria"
+  
+  # 2. ARCHITECTURAL RULES
+  - name: "No Direct API Calls"
+    description: "All external integrations must use MCP abstraction"
+    severity: error
+    rules:
+      - pattern: "src/chimera/**/*.py"
+        forbidden_imports:
+          - "tweepy"
+          - "requests.post"
+          - "httpx.post"
+        message: "Use MCP abstraction. See .cursor/rules Rule 1"
+        exceptions:
+          - "src/chimera/mcp_servers/**"
+  
+  - name: "No Blocking Operations in Workers"
+    description: "Workers must use async/await patterns"
+    severity: error
+    rules:
+      - pattern: "src/chimera/services/worker/**/*.py"
+        forbidden_patterns:
+          - "time.sleep"
+          - "requests.get"
+          - "open\\(.*\\).read\\(\\)"
+        message: "Use async patterns. See .cursor/rules Rule 2"
+  
+  - name: "OCC Required for State Updates"
+    description: "State changes must use Optimistic Concurrency Control"
+    severity: error
+    rules:
+      - pattern: "src/**/*.py"
+        if_contains: "global_state.update"
+        must_also_contain: "version_check"
+        message: "Use OCC pattern. See specs/technical.md OCC section"
+  
+  - name: "Persona Validation Required"
+    description: "Content generation must validate against SOUL.md"
+    severity: error
+    rules:
+      - pattern: "src/chimera/skills/**/*.py"
+        if_contains: "llm.generate"
+        must_also_contain: "persona"
+        message: "Include persona context. See .cursor/rules Rule 4"
+  
+  - name: "Budget Checks Before Transactions"
+    description: "Financial operations must have CFO Judge approval"
+    severity: error
+    rules:
+      - pattern: "src/**/*.py"
+        if_contains: "wallet.send"
+        must_also_contain: "cfo_judge"
+        message: "Budget governance required. See .cursor/rules Rule 5"
+  
+  # 3. CODE QUALITY
+  - name: "Type Hints Required"
+    description: "All functions must have type annotations"
+    severity: warning
+    rules:
+      - pattern: "src/**/*.py"
+        must_match: "^(async )?def \\w+\\([^)]*\\) -> \\w+:"
+        message: "Add type hints to all functions"
+  
+  - name: "Docstrings Required"
+    description: "Public functions need docstrings"
+    severity: warning
+    rules:
+      - pattern: "src/**/*.py"
+        if_pattern: "^def [^_]"
+        must_have_docstring: true
+        message: "Add Google-style docstring"
+  
+  - name: "Error Handling Required"
+    description: "Risky operations must have try/except"
+    severity: error
+    rules:
+      - pattern: "src/**/*.py"
+        if_contains: 
+          - "await mcp_client.call"
+          - "await db."
+          - "await wallet."
+        must_be_in: "try:"
+        message: "Add error handling for external calls"
+  
+  # 4. TESTING
+  - name: "Tests Required for Features"
+    description: "New features must have corresponding tests"
+    severity: error
+    rules:
+      - if_modified: "src/chimera/**/*.py"
+        must_also_modify: "tests/**/*test_*.py"
+        message: "Add tests for new code (TDD)"
+  
+  - name: "Test Isolation"
+    description: "Tests must not depend on external services"
+    severity: warning
+    rules:
+      - pattern: "tests/unit/**/*.py"
+        forbidden_imports:
+          - "anthropic"
+          - "openai"
+          - "google.generativeai"
+        message: "Mock external services in unit tests"
+  
+  # 5. SECURITY
+  - name: "No Hardcoded Secrets"
+    description: "Credentials must come from environment"
+    severity: error
+    rules:
+      - pattern: "**/*.py"
+        forbidden_patterns:
+          - 'API_KEY = "[^"]+"'
+          - 'PASSWORD = "[^"]+"'
+          - 'sk-ant-'
+          - 'sk-proj-'
+        message: "Use environment variables for secrets"
+  
+  - name: "SQL Injection Prevention"
+    description: "Use parameterized queries"
+    severity: error
+    rules:
+      - pattern: "src/**/*.py"
+        if_contains: "execute("
+        forbidden_patterns:
+          - 'f"SELECT'
+          - 'f"INSERT'
+          - '+ "WHERE'
+        message: "Use SQLAlchemy ORM or parameterized queries"
+  
+  # 6. TRACEABILITY
+  - name: "Commit Message Format"
+    description: "Commits must reference specs or issues"
+    severity: warning
+    rules:
+      - commit_message:
+        must_match: "^(feat|fix|docs|style|refactor|test|chore)\\(\\w+\\):"
+        must_contain: "Refs: #\\d+|US-\\d+"
+        message: "Use conventional commits + reference issue/spec"
+
+# Auto-approve safe changes
+auto_approve:
+  - pattern: "**/*.md"
+    if_only: "documentation"
+  - pattern: "tests/**"
+    if_only: "tests"
+  - pattern: "**/*.yaml"
+    if_only: "ci_config"
+
+# Review focus areas (prioritized)
+focus_areas:
+  - name: "Specification Compliance"
+    weight: 0.4
+    description: "Does code match specs/"
+  
+  - name: "Architectural Patterns"
+    weight: 0.3
+    description: "Follows MCP, OCC, async patterns"
+  
+  - name: "Test Coverage"
+    weight: 0.2
+    description: "TDD, proper mocking"
+  
+  - name: "Security"
+    weight: 0.1
+    description: "No secrets, injection prevention"
+
+# Custom review prompts
+prompts:
+  code_review: |
+    You are reviewing code for Project Chimera, an autonomous influencer system.
+    
+    PRIMARY FOCUS: Specification alignment
+    - Does this code implement a documented user story (US-XXX)?
+    - Does it match the API contract in specs/technical.md?
+    - Does it satisfy ALL acceptance criteria?
+    
+    ARCHITECTURAL COMPLIANCE:
+    - No direct API calls (must use MCP abstraction)
+    - Workers use async/await (no blocking)
+    - State updates use OCC (Optimistic Concurrency Control)
+    - Content generation validates persona
+    - Transactions have budget checks
+    
+    CODE QUALITY:
+    - Type hints present?
+    - Error handling adequate?
+    - Tests written (TDD)?
+    - Logging includes trace_id?
+    
+    SECURITY:
+    - No hardcoded secrets?
+    - No SQL injection vulnerabilities?
+    - Input validation present?
+    
+    If ANY spec requirement is missing, request changes.
+    Quote the specific spec section that's violated.
+  
+  test_review: |
+    Verify tests follow TDD principles:
+    - Do tests reference acceptance criteria (US-XXX)?
+    - Are external services mocked?
+    - Do tests cover error cases?
+    - Is test isolation maintained?
+
+# Ignored files/directories
+path_filters:
+  excluded:
+    - "**/__pycache__/**"
+    - "**/.venv/**"
+    - "**/.pytest_cache/**"
+    - "**/node_modules/**"
+    - "**/*.pyc"
+  
+  included:
+    - "src/**/*.py"
+    - "tests/**/*.py"
+    - "specs/**/*.md"
+    - "skills/**/*.md"
+
+# Language-specific settings
+python:
+  version: "3.12"
+  formatter: "black"
+  linter: "ruff"
+  type_checker: "mypy"
+  line_length: 100
+
+# Review timing
+review:
+  high_priority_files:
+    - "src/chimera/core/**"
+    - "src/chimera/services/**"
+    - "specs/**"
+  
+  require_approval:
+    - "specs/**/*.md"
+    - "src/chimera/core/**/*.py"
+    - ".github/workflows/**"
+  
+  auto_request_review:
+    - pattern: "src/**/*.py"
+      reviewers: ["@team-lead"]
+      if_changed_lines: "> 50"
+
+# Notification settings
+notifications:
+  slack:
+    enabled: false
+  email:
+    enabled: true
+    on_events:
+      - "review_requested"
+      - "changes_requested"
+      - "approved"
+
+# Learning mode (CodeRabbit learns from accepted reviews)
+learning:
+  enabled: true
+  feedback_weight: 0.8
+  
+# Behavior flags
+flags:
+  enforce_conventional_commits: true
+  enforce_linear_history: false
+  require_issue_reference: true
+  block_force_push: true
+  require_signed_commits: false

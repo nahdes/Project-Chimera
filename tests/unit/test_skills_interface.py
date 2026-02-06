@@ -248,7 +248,7 @@ class TestGenerateSocialPostSkill:
         
         This test WILL FAIL until GenerateSocialPostOutput is implemented.
         """
-        from chimera.skills.skill_generate_social_post.schema import GenerateSocialPostOutput
+        from CONTENT.skills.skill_generate_social_post.schema import GenerateSocialPostOutput
         
         output = GenerateSocialPostOutput(
             success=True,
