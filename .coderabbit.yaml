@@ -36,10 +36,10 @@ checks:
     description: "Verify code implements documented specifications"
     severity: error
     rules:
-      - pattern: "src/**/*.py"
-        must_reference: "specs/**/*.md"
-        message: "All code must reference a spec. Include '# Implements: US-XXX' comment"
-      
+      - pattern: "src/chimera/**/*.py"
+        must_contain: "# Implements: US-"
+        message: "Chimera source files should reference the related spec. Include '# Implements: US-XXX' comment"
+
       - pattern: "tests/**/*.py"
         must_contain: "US-"
         message: "Tests must reference user story acceptance criteria"
@@ -52,8 +52,8 @@ checks:
       - pattern: "src/chimera/**/*.py"
         forbidden_imports:
           - "tweepy"
-          - "requests.post"
-          - "httpx.post"
+          - "requests"
+          - "httpx"
         message: "Use MCP abstraction. See .cursor/rules Rule 1"
         exceptions:
           - "src/chimera/mcp_servers/**"
