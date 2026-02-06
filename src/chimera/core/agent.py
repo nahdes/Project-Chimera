@@ -11,7 +11,7 @@ from .persona import parse_soul_md
 @dataclass
 class Agent:
     name: str
-    soul_md_path: str
+    soul_md_path: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
     social_handles: Dict[str, str] = field(default_factory=dict)

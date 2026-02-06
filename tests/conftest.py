@@ -1,3 +1,17 @@
+import os
+import sys
+
+# Ensure the src/ directory is on sys.path so imports like `import chimera` work
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SRC = os.path.join(ROOT, "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+# Ensure '/tmp' exists on Windows so tests that write to /tmp succeed
+try:
+    tmp_root = os.path.join(os.path.abspath(os.sep), "tmp")
+    os.makedirs(tmp_root, exist_ok=True)
+except Exception:
+    pass
 """
 Pytest Configuration and Fixtures for Project Chimera
 

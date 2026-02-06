@@ -28,7 +28,6 @@ reviews:
     
 chat:
   auto_reply: true
-
 # CRITICAL: Spec-Driven Development Checks
 checks:
   # 1. SPEC ALIGNMENT (HIGHEST PRIORITY)
@@ -180,122 +179,6 @@ checks:
         must_match: "^(feat|fix|docs|style|refactor|test|chore)\\(\\w+\\):"
         must_contain: "Refs: #\\d+|US-\\d+"
         message: "Use conventional commits + reference issue/spec"
-
-# Auto-approve safe changes
-auto_approve:
-  - pattern: "**/*.md"
-    if_only: "documentation"
-  - pattern: "tests/**"
-    if_only: "tests"
-  - pattern: "**/*.yaml"
-    if_only: "ci_config"
-
-# Review focus areas (prioritized)
-focus_areas:
-  - name: "Specification Compliance"
-    weight: 0.4
-    description: "Does code match specs/"
-  
-  - name: "Architectural Patterns"
-    weight: 0.3
-    description: "Follows MCP, OCC, async patterns"
-  
-  - name: "Test Coverage"
-    weight: 0.2
-    description: "TDD, proper mocking"
-  
-  - name: "Security"
-    weight: 0.1
-    description: "No secrets, injection prevention"
-
-# Custom review prompts
-prompts:
-  code_review: |
-    You are reviewing code for Project Chimera, an autonomous influencer system.
-    
-    PRIMARY FOCUS: Specification alignment
-    - Does this code implement a documented user story (US-XXX)?
-    - Does it match the API contract in specs/technical.md?
-    - Does it satisfy ALL acceptance criteria?
-    
-    ARCHITECTURAL COMPLIANCE:
-    - No direct API calls (must use MCP abstraction)
-    - Workers use async/await (no blocking)
-    - State updates use OCC (Optimistic Concurrency Control)
-    - Content generation validates persona
-    - Transactions have budget checks
-    
-    CODE QUALITY:
-    - Type hints present?
-    - Error handling adequate?
-    - Tests written (TDD)?
-    - Logging includes trace_id?
-    
-    SECURITY:
-    - No hardcoded secrets?
-    - No SQL injection vulnerabilities?
-    - Input validation present?
-    
-    If ANY spec requirement is missing, request changes.
-    Quote the specific spec section that's violated.
-  
-  test_review: |
-    Verify tests follow TDD principles:
-    - Do tests reference acceptance criteria (US-XXX)?
-    - Are external services mocked?
-    - Do tests cover error cases?
-    - Is test isolation maintained?
-
-# Ignored files/directories
-path_filters:
-  excluded:
-    - "**/__pycache__/**"
-    - "**/.venv/**"
-    - "**/.pytest_cache/**"
-    - "**/node_modules/**"
-    - "**/*.pyc"
-  
-  included:
-    - "src/**/*.py"
-    - "tests/**/*.py"
-    - "specs/**/*.md"
-    - "skills/**/*.md"
-
-# Language-specific settings
-python:
-  version: "3.12"
-  formatter: "black"
-  linter: "ruff"
-  type_checker: "mypy"
-  line_length: 100
-
-# Review timing
-review:
-  high_priority_files:
-    - "src/chimera/core/**"
-    - "src/chimera/services/**"
-    - "specs/**"
-  
-  require_approval:
-    - "specs/**/*.md"
-    - "src/chimera/core/**/*.py"
-    - ".github/workflows/**"
-  
-  auto_request_review:
-    - pattern: "src/**/*.py"
-      reviewers: ["@team-lead"]
-      if_changed_lines: "> 50"
-
-# Notification settings
-notifications:
-  slack:
-    enabled: false
-  email:
-    enabled: true
-    on_events:
-      - "review_requested"
-      - "changes_requested"
-      - "approved"
 
 # Learning mode (CodeRabbit learns from accepted reviews)
 learning:
