@@ -2,7 +2,7 @@ name: Project Chimera - CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, feature/** ]
+    branches: [ main, Architecture, TheGovernor,TheGovernor/** ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:  # Manual trigger
